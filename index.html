@@ -2,13 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Rally your crew, track weather, and hit the next beach cleanup. ShoreSquad - Making eco-action fun and connected.">
     <meta name="theme-color" content="#0EA5E9">
     <meta name="author" content="ShoreSquad Team">
     <meta name="keywords" content="beach cleanup, social, eco-action, map, weather">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ShoreSquad">
     <title>ShoreSquad - Beach Cleanup Made Social</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Production: Minified CSS for <1s load on 4G -->
+    <link rel="stylesheet" href="css/styles.min.css">
+    <!-- Preload critical fonts -->
+    <link rel="preload" as="font" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700;800" crossorigin>
 </head>
 <body>
     <!-- Navigation Header -->
@@ -243,6 +249,7 @@
     </script>
 
     <!-- Application Scripts -->
-    <script src="js/app.js" defer></script>
+    <!-- Production: Minified JS for <1s load -->
+    <script src="js/app.min.js" defer></script>
 </body>
 </html>
