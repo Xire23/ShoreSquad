@@ -13,6 +13,7 @@
 const AppState = {
     userLocation: null,
     weatherData: null,
+    selectedCleanupSpot: 'east-coast',
     crews: JSON.parse(localStorage.getItem('shoreSquadCrews')) || [],
     events: JSON.parse(localStorage.getItem('shoreSquadEvents')) || [],
 
@@ -50,6 +51,12 @@ const DOM = {
     crewList: null,
     createCrewBtn: null,
     getStartedBtn: null,
+    nextCleanupInfo: null,
+    joinCleanupBtn: null,
+    cleanupTitle: null,
+    cleanupLocation: null,
+    cleanupDate: null,
+    cleanupDifficulty: null,
 
     /**
      * Initialize DOM element references
@@ -62,6 +69,12 @@ const DOM = {
             this.crewList = document.getElementById('crewList');
             this.createCrewBtn = document.getElementById('createCrewBtn');
             this.getStartedBtn = document.getElementById('getStartedBtn');
+            this.nextCleanupInfo = document.getElementById('nextCleanupInfo');
+            this.joinCleanupBtn = document.getElementById('joinCleanupBtn');
+            this.cleanupTitle = document.getElementById('cleanupTitle');
+            this.cleanupLocation = document.getElementById('cleanupLocation');
+            this.cleanupDate = document.getElementById('cleanupDate');
+            this.cleanupDifficulty = document.getElementById('cleanupDifficulty');
             console.log('✅ DOM elements initialized');
         } catch (err) {
             console.error('Error initializing DOM:', err);
@@ -434,6 +447,154 @@ const CrewService = {
 };
 
 // ============================================
+// Cleanup Service - Next Cleanup Management
+// ============================================
+
+const CleanupService = {
+    /**
+     * Cleanup spot details
+     */
+    cleanupSpots: [
+        {
+            id: 'east-coast',
+            name: 'East Coast Park',
+            location: '1.3024°N, 103.9620°E',
+            date: 'Saturday, Dec 7',
+            time: '9:00 AM',
+            difficulty: 'Easy',
+            members: 12,
+            emoji: '📍'
+        },
+        {
+            id: 'pasir-ris',
+            name: 'Pasir Ris Beach',
+            location: '1.3815°N, 103.9556°E',
+            date: 'Sunday, Dec 8',
+            time: '8:30 AM',
+            difficulty: 'Medium',
+            members: 15,
+            emoji: '🏖️'
+        },
+        {
+            id: 'sentosa',
+            name: 'Sentosa Beach',
+            location: '1.2494°N, 103.8303°E',
+            date: 'Saturday, Dec 14',
+            time: '10:00 AM',
+            difficulty: 'Easy',
+            members: 10,
+            emoji: '🌴'
+        },
+        {
+            id: 'changi',
+            name: 'Changi Beach',
+            location: '1.4050°N, 103.9765°E',
+            date: 'Sunday, Dec 15',
+            time: '7:00 AM',
+            difficulty: 'Hard',
+            members: 8,
+            emoji: '🌊'
+        }
+    ],
+
+    /**
+     * Get cleanup spot by ID
+     */
+    getSpotById(spotId) {
+        return this.cleanupSpots.find(spot => spot.id === spotId) || this.cleanupSpots[0];
+    },
+
+    /**
+     * Update cleanup info display
+     */
+    updateCleanupInfo(spotId) {
+        try {
+            const spot = this.getSpotById(spotId);
+            console.log('🌊 Updating cleanup info to:', spot.name);
+            
+            DOM.cleanupTitle.textContent = `${spot.emoji} Next Cleanup: ${spot.name}`;
+            DOM.cleanupLocation.textContent = `📍 Location: ${spot.location}`;
+            DOM.cleanupDate.textContent = `📅 ${spot.date} @ ${spot.time}`;
+            DOM.cleanupDifficulty.textContent = `⭐ Difficulty: ${spot.difficulty} | 👥 ${spot.members} crew members`;
+            
+            // Store current selected spot
+            AppState.selectedCleanupSpot = spotId;
+            
+            console.log('✅ Cleanup info updated');
+        } catch (err) {
+            console.error('❌ Error updating cleanup info:', err);
+        }
+    },
+
+    /**
+     * Join the cleanup event
+     */
+    joinCleanup() {
+        try {
+            console.log('🌊 User joining cleanup...');
+            
+            const spotId = AppState.selectedCleanupSpot || 'east-coast';
+            const spot = this.getSpotById(spotId);
+            
+            // Create cleanup event object
+            const cleanupEvent = {
+                id: Date.now(),
+                spotId: spotId,
+                location: spot.name,
+                date: spot.date,
+                time: spot.time,
+                difficulty: spot.difficulty,
+                participants: spot.members,
+                joinedAt: new Date().toISOString()
+            };
+            
+            // Add to events
+            AppState.events.push(cleanupEvent);
+            AppState.saveEvents();
+            
+            console.log('✅ Joined cleanup:', cleanupEvent);
+            
+            // Show confirmation popup
+            this.showJoinConfirmation(spot.name);
+            
+        } catch (err) {
+            console.error('❌ Error joining cleanup:', err);
+            UI.showAlert('❌ Error joining cleanup', 'error');
+        }
+    },
+
+    /**
+     * Show confirmation popup when user joins
+     */
+    showJoinConfirmation(spotName) {
+        try {
+            // Create popup element
+            const popup = document.createElement('div');
+            popup.className = 'join-confirmation-popup';
+            popup.innerHTML = `
+                <div class="popup-content">
+                    <div class="popup-emoji">🎉</div>
+                    <h3>You have joined the cleanup!</h3>
+                    <p>${spotName}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(popup);
+            console.log('✅ Confirmation popup shown');
+            
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                popup.classList.add('fade-out');
+                setTimeout(() => popup.remove(), 300);
+            }, 4000);
+            
+        } catch (err) {
+            console.error('❌ Error showing confirmation:', err);
+        }
+    }
+};
+
+// ============================================
 // UI Helper Functions
 // ============================================
 
@@ -547,6 +708,18 @@ function setupEventListeners() {
             }
         });
 
+        // Join cleanup button
+        if (DOM.joinCleanupBtn) {
+            DOM.joinCleanupBtn.addEventListener('click', () => {
+                try {
+                    console.log('🎯 Join cleanup button clicked');
+                    CleanupService.joinCleanup();
+                } catch (err) {
+                    console.error('❌ Join button error:', err);
+                }
+            });
+        }
+
         // Get started button
         DOM.getStartedBtn.addEventListener('click', () => {
             try {
@@ -571,11 +744,12 @@ function setupEventListeners() {
             });
         });
 
-        // Map spot button switching
+        // Map spot button switching - Update cleanup info on click
         document.querySelectorAll('.map-spot-btn').forEach((btn) => {
             btn.addEventListener('click', (e) => {
                 try {
-                    console.log('🗺️ Map button clicked:', e.currentTarget.dataset.map);
+                    const spotId = e.currentTarget.dataset.map;
+                    console.log('🗺️ Cleanup spot clicked:', spotId);
                     
                     // Remove active class from all buttons
                     document.querySelectorAll('.map-spot-btn').forEach(b => {
@@ -585,13 +759,16 @@ function setupEventListeners() {
                     // Add active class to clicked button
                     e.currentTarget.classList.add('active');
                     
+                    // Update cleanup info display
+                    CleanupService.updateCleanupInfo(spotId);
+                    
                     // Hide all maps
                     document.querySelectorAll('#mapContainer > div').forEach(map => {
                         map.style.display = 'none';
                     });
                     
                     // Show selected map
-                    const mapId = e.currentTarget.dataset.map + '-map';
+                    const mapId = spotId + '-map';
                     const selectedMap = document.getElementById(mapId);
                     if (selectedMap) {
                         selectedMap.style.display = 'block';
@@ -601,7 +778,7 @@ function setupEventListeners() {
                     }
                 } catch (err) {
                     console.error('❌ Map button error:', err);
-                    UI.showAlert('❌ Error switching map: ' + err.message, 'error');
+                    UI.showAlert('❌ Error selecting cleanup spot: ' + err.message, 'error');
                 }
             });
         });

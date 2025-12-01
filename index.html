@@ -82,11 +82,14 @@
         <section id="map" class="map-section" role="region" aria-label="Map section">
             <div class="container">
                 <h2>🗺️ Find a Cleanup Near You</h2>
-                <div class="map-info">
-                    <h3>🌊 Next Cleanup: East Coast Park</h3>
-                    <p>📍 Location: 1.3024°N, 103.9620°E</p>
-                    <p>📅 Saturday, Dec 7 @ 9:00 AM</p>
-                    <p>⭐ Difficulty: Easy | 👥 12 crew members</p>
+                <div id="nextCleanupInfo" class="map-info cleanup-card">
+                    <h3 id="cleanupTitle">🌊 Next Cleanup: East Coast Park</h3>
+                    <p id="cleanupLocation">📍 Location: 1.3024°N, 103.9620°E</p>
+                    <p id="cleanupDate">📅 Saturday, Dec 7 @ 9:00 AM</p>
+                    <p id="cleanupDifficulty">⭐ Difficulty: Easy | 👥 12 crew members</p>
+                    <button id="joinCleanupBtn" class="cta-button" style="margin-top: 1rem;" aria-label="Join this cleanup">
+                        Join Cleanup
+                    </button>
                 </div>
                 
                 <!-- Map Selector -->
