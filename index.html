@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rally your crew, track weather, and hit the next beach cleanup. ShoreSquad - Making eco-action fun and connected.">
+    <meta name="theme-color" content="#0EA5E9">
+    <meta name="author" content="ShoreSquad Team">
+    <meta name="keywords" content="beach cleanup, social, eco-action, map, weather">
+    <title>ShoreSquad - Beach Cleanup Made Social</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header role="banner" aria-label="Site header">
+        <nav class="navbar" role="navigation" aria-label="Main navigation">
+            <div class="container">
+                <div class="logo">
+                    <h1>🏄 ShoreSquad</h1>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home" class="nav-link">Home</a></li>
+                    <li><a href="#map" class="nav-link">Map</a></li>
+                    <li><a href="#weather" class="nav-link">Weather</a></li>
+                    <li><a href="#crew" class="nav-link">Crew</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main">
+        <!-- Hero Section -->
+        <section id="home" class="hero" role="region" aria-label="Hero section">
+            <div class="hero-content">
+                <h2>Rally Your Crew.</h2>
+                <p class="tagline">Track weather, plan cleanups, and hit the beach with your squad.</p>
+                <button class="cta-button" id="getStartedBtn" aria-label="Get started with ShoreSquad">
+                    Get Started
+                </button>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+                🌊
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features" role="region" aria-label="Features">
+            <div class="container">
+                <h2>Why ShoreSquad?</h2>
+                <div class="features-grid">
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">📍</div>
+                        <h3>Smart Maps</h3>
+                        <p>Find nearby beaches and cleanup spots in real-time with our interactive map.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🌤️</div>
+                        <h3>Live Weather</h3>
+                        <p>Check real-time weather conditions to plan the perfect cleanup day.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">👥</div>
+                        <h3>Build Your Crew</h3>
+                        <p>Connect with friends and like-minded ocean lovers in your area.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🏆</div>
+                        <h3>Track Impact</h3>
+                        <p>See how much trash your crew has collected and celebrate wins together.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Map Section -->
+        <section id="map" class="map-section" role="region" aria-label="Map section">
+            <div class="container">
+                <h2>Find a Cleanup Near You</h2>
+                <div class="map-info">
+                    <h3>Next Cleanup: Pasir Ris Beach</h3>
+                    <p>📍 Location: 1.381497°N, 103.955574°E</p>
+                </div>
+                <div id="mapContainer" class="map-placeholder">
+                    <!-- Google Maps Iframe Placeholder -->
+                    <iframe 
+                        title="Google Map showing Pasir Ris Beach cleanup location"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1994.7438379624922!2d103.95507300000001!3d1.381497!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da1a8e6f7f7f7f%3A0x1a1a1a1a1a1a1a1a!2sPasir%20Ris%20Beach!5e0!3m2!1sen!2ssg!4v1701388800000" 
+                        width="100%" 
+                        height="500" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+                <button id="enableLocationBtn" class="secondary-button" aria-label="Enable location services">
+                    📍 Enable My Location
+                </button>
+            </div>
+        </section>
+
+        <!-- Weather Dashboard -->
+        <section id="weather" class="weather-section" role="region" aria-label="Weather section">
+            <div class="container">
+                <h2>Weather Check</h2>
+                <div id="weatherDashboard" class="weather-grid">
+                    <div class="weather-card" role="status" aria-live="polite" aria-busy="false">
+                        <p>📍 Enable location to see weather forecast</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Crew Section -->
+        <section id="crew" class="crew-section" role="region" aria-label="Crew section">
+            <div class="container">
+                <h2>Your Crew</h2>
+                <div id="crewList" class="crew-grid">
+                    <div class="crew-placeholder">
+                        <p>Join or create a crew to start your impact 🌊</p>
+                    </div>
+                </div>
+                <button id="createCrewBtn" class="cta-button" aria-label="Create a new crew">
+                    Create Crew
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer role="contentinfo">
+        <div class="container">
+            <p>&copy; 2025 ShoreSquad. Rally the crew, clean the beach. 🌊</p>
+            <p class="footer-tagline">Made with 💙 for ocean lovers everywhere.</p>
+        </div>
+    </footer>
+
+    <!-- Tawk.to Live Chat Widget -->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function(){
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/YOUR_PROPERTY_ID/1h1glv5k9'; // Replace with your Tawk.to property ID
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+
+    <!-- Application Scripts -->
+    <script src="js/app.js" defer></script>
+</body>
+</html>

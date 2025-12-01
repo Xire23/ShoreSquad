@@ -1,0 +1,28 @@
+{
+  "name": "shoresquad-skeleton",
+  "version": "1.0.0",
+  "description": "ShoreSquad - Beach cleanup app skeleton with HTML5, CSS3, ES6+",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server --port=5000 --open=index.html",
+    "dev": "live-server --port=8000",
+    "serve": "live-server"
+  },
+  "keywords": [
+    "beach",
+    "cleanup",
+    "social",
+    "eco-action",
+    "map",
+    "weather"
+  ],
+  "author": "ShoreSquad Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Xire23/ShoreSquad.git"
+  }
+}
