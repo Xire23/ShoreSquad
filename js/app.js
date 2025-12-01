@@ -279,7 +279,7 @@ const WeatherService = {
     },
 
     /**
-     * Display weather from NEA API
+     * Display weather from NEA API (appends to existing weather)
      */
     displayWeather(data) {
         try {
@@ -288,41 +288,73 @@ const WeatherService = {
             }
 
             const item = data.items[0];
-            const forecasts = item.forecasts || [];
+            
+            // NEA API structure: general forecasts or periods
+            const forecasts = item.forecasts || item.periods || [];
             const validDate = item.valid_period?.start || new Date().toISOString();
 
             console.log(`📊 Displaying ${forecasts.length} forecast items`);
+            console.log('Full item structure:', item);
+            console.log('Raw forecasts:', forecasts);
 
-            let html = `
-                <div class="weather-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div class="weather-date">🌍 REAL WEATHER - Updated: ${new Date(validDate).toLocaleTimeString()}</div>
-                    <div class="weather-condition">🌏 Singapore 24-Hour Forecast (Live)</div>
-                </div>
-            `;
-
-            forecasts.slice(0, 8).forEach((forecast, idx) => {
-                const emoji = this.getWeatherEmoji(forecast.forecast);
-                const timeStr = new Date(forecast.timestamp).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
+            // Get existing content and append to it
+            let html = DOM.weatherDashboard.innerHTML;
+            
+            // Only add if we have forecasts
+            if (forecasts.length > 0) {
+                // Add separator
                 html += `
-                    <div class="weather-card">
-                        <div class="weather-date">${timeStr}</div>
-                        <div class="weather-emoji">${emoji}</div>
-                        <div class="weather-condition">${forecast.forecast}</div>
-                        <div class="weather-detail">💧 ${forecast.relative_humidity}% humidity</div>
+                    <div class="weather-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-top: 1rem;">
+                        <div class="weather-date">🌍 LIVE WEATHER - Updated: ${new Date(validDate).toLocaleTimeString()}</div>
+                        <div class="weather-condition">📍 Your Location's Real Forecast</div>
                     </div>
                 `;
-            });
+
+                forecasts.slice(0, 8).forEach((forecast, idx) => {
+                    // Handle both forecast object and string format
+                    let condition = typeof forecast === 'string' ? forecast : forecast.forecast;
+                    let humidity = forecast.relative_humidity || '—';
+                    let timeStr = forecast.timestamp 
+                        ? new Date(forecast.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : forecast.time || `${idx + 1}`;
+                    
+                    const emoji = this.getWeatherEmoji(condition);
+                    
+                    html += `
+                        <div class="weather-card">
+                            <div class="weather-date">${timeStr}</div>
+                            <div class="weather-emoji">${emoji}</div>
+                            <div class="weather-condition">${condition}</div>
+                            <div class="weather-detail">💧 ${humidity}% humidity</div>
+                        </div>
+                    `;
+                });
+            } else {
+                console.warn('⚠️ No forecasts in API response, showing general forecast');
+                // Try to show general forecast if available
+                if (item.general) {
+                    html += `
+                        <div class="weather-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-top: 1rem;">
+                            <div class="weather-date">🌍 LIVE WEATHER - Updated: ${new Date(validDate).toLocaleTimeString()}</div>
+                            <div class="weather-condition">📍 General Forecast</div>
+                        </div>
+                        <div class="weather-card">
+                            <div class="weather-emoji">${this.getWeatherEmoji(item.general.forecast)}</div>
+                            <div class="weather-condition">${item.general.forecast}</div>
+                            <div class="weather-detail">💧 ${item.general.relative_humidity || '—'}% humidity</div>
+                        </div>
+                    `;
+                } else {
+                    html += `<div class="weather-card" style="grid-column: 1 / -1; background: #ff6b6b;"><p>⚠️ No forecast data available from API</p></div>`;
+                }
+            }
 
             DOM.weatherDashboard.innerHTML = html;
-            console.log('✅ Real weather cards rendered');
+            console.log('✅ Real weather cards added to existing forecast');
 
         } catch (err) {
             console.error('❌ Error displaying weather:', err);
-            console.log('⚠️ Keeping existing weather, will try API again later');
+            console.log('⚠️ Keeping existing weather');
         }
     },
 
