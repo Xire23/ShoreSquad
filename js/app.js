@@ -271,7 +271,10 @@ const WeatherService = {
             console.error('❌ Weather API Error:', err.message);
             console.warn('Falling back to mock weather data...');
             UI.showAlert(`⚠️ Using mock data: ${err.message}`, 'info');
-            this.displayMockWeather();
+            // Only display mock if weather dashboard is empty
+            if (!DOM.weatherDashboard.innerHTML || DOM.weatherDashboard.innerHTML.trim() === '') {
+                this.displayMockWeather();
+            }
         }
     },
 
@@ -292,8 +295,8 @@ const WeatherService = {
 
             let html = `
                 <div class="weather-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div class="weather-date">Updated: ${new Date(validDate).toLocaleTimeString()}</div>
-                    <div class="weather-condition">🌏 Singapore 24-Hour Forecast</div>
+                    <div class="weather-date">🌍 REAL WEATHER - Updated: ${new Date(validDate).toLocaleTimeString()}</div>
+                    <div class="weather-condition">🌏 Singapore 24-Hour Forecast (Live)</div>
                 </div>
             `;
 
@@ -315,11 +318,11 @@ const WeatherService = {
             });
 
             DOM.weatherDashboard.innerHTML = html;
-            console.log('✅ Weather cards rendered');
+            console.log('✅ Real weather cards rendered');
 
         } catch (err) {
             console.error('❌ Error displaying weather:', err);
-            this.displayMockWeather();
+            console.log('⚠️ Keeping existing weather, will try API again later');
         }
     },
 
