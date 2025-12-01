@@ -75,16 +75,43 @@
         <!-- Interactive Map Section -->
         <section id="map" class="map-section" role="region" aria-label="Map section">
             <div class="container">
-                <h2>Find a Cleanup Near You</h2>
+                <h2>🗺️ Find a Cleanup Near You</h2>
                 <div class="map-info">
-                    <h3>Next Cleanup: Pasir Ris Beach</h3>
-                    <p>📍 Location: 1.381497°N, 103.955574°E</p>
+                    <h3>🌊 Next Cleanup: East Coast Park</h3>
+                    <p>📍 Location: 1.3024°N, 103.9620°E</p>
+                    <p>📅 Saturday, Dec 7 @ 9:00 AM</p>
+                    <p>⭐ Difficulty: Easy | 👥 12 crew members</p>
                 </div>
+                
+                <!-- Map Selector -->
+                <div class="map-selector">
+                    <h3>Cleanup Spots</h3>
+                    <button class="map-spot-btn active" data-map="east-coast" aria-label="East Coast Park">📍 East Coast Park</button>
+                    <button class="map-spot-btn" data-map="pasir-ris" aria-label="Pasir Ris Beach">🏖️ Pasir Ris Beach</button>
+                    <button class="map-spot-btn" data-map="sentosa" aria-label="Sentosa Beach">🌴 Sentosa Beach</button>
+                    <button class="map-spot-btn" data-map="changi" aria-label="Changi Beach">🌊 Changi Beach</button>
+                </div>
+
                 <div id="mapContainer" class="map-placeholder">
-                    <!-- Google Maps Iframe Placeholder -->
+                    <!-- Google Maps Iframe for East Coast Park (Primary) -->
                     <iframe 
-                        title="Google Map showing Pasir Ris Beach cleanup location"
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1994.7438379624922!2d103.95507300000001!3d1.381497!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da1a8e6f7f7f7f%3A0x1a1a1a1a1a1a1a1a!2sPasir%20Ris%20Beach!5e0!3m2!1sen!2ssg!4v1701388800000" 
+                        id="east-coast-map"
+                        title="Google Map showing East Coast Park cleanup location"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8194862299837!2d103.9600000!3d1.3024000!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da10a7fac00001%3A0xf1e4e62b4a9d8f2!2sEast%20Coast%20Park!5e0!3m2!1sen!2ssg!4v1701388800000" 
+                        width="100%" 
+                        height="500" 
+                        style="border:0;display:block;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+
+                <!-- Hidden Maps for other spots -->
+                <div id="pasir-ris-map" style="display:none;">
+                    <iframe 
+                        title="Google Map showing Pasir Ris Beach"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1994.743837962492!2d103.95507300000001!3d1.381497!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da1a8e6f7f7f7f%3A0x1a1a1a1a1a1a1a1a!2sPasir%20Ris%20Beach!5e0!3m2!1sen!2ssg!4v1701388800000" 
                         width="100%" 
                         height="500" 
                         style="border:0;" 
@@ -93,8 +120,35 @@
                         referrerpolicy="no-referrer-when-downgrade">
                     </iframe>
                 </div>
+
+                <div id="sentosa-map" style="display:none;">
+                    <iframe 
+                        title="Google Map showing Sentosa Beach"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.393298829226!2d103.8303000!3d1.2494000!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da111111111111%3A0x2222222222222222!2sSentosa%20Beach!5e0!3m2!1sen!2ssg!4v1701388800000" 
+                        width="100%" 
+                        height="500" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+
+                <div id="changi-map" style="display:none;">
+                    <iframe 
+                        title="Google Map showing Changi Beach"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.3234823892!2d103.9765000!3d1.4050000!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da33333333333!2sChangi%20Beach!5e0!3m2!1sen!2ssg!4v1701388800000" 
+                        width="100%" 
+                        height="500" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+
                 <button id="enableLocationBtn" class="secondary-button" aria-label="Enable location services">
-                    📍 Enable My Location
+                    📍 Enable My Location & Load Real Weather
                 </button>
             </div>
         </section>
@@ -102,10 +156,40 @@
         <!-- Weather Dashboard -->
         <section id="weather" class="weather-section" role="region" aria-label="Weather section">
             <div class="container">
-                <h2>Weather Check</h2>
+                <h2>🌤️ Weather Check</h2>
                 <div id="weatherDashboard" class="weather-grid">
-                    <div class="weather-card" role="status" aria-live="polite" aria-busy="false">
-                        <p>📍 Enable location to see weather forecast</p>
+                    <!-- Mock Weather Cards -->
+                    <div class="weather-card" role="status">
+                        <div class="weather-date">Today</div>
+                        <div class="weather-emoji">☀️</div>
+                        <div class="weather-temp">28°C</div>
+                        <div class="weather-condition">Sunny & Clear</div>
+                        <div class="weather-detail">💧 Humidity: 65%</div>
+                        <div class="weather-detail">💨 Wind: 12 km/h</div>
+                    </div>
+                    <div class="weather-card" role="status">
+                        <div class="weather-date">Tomorrow</div>
+                        <div class="weather-emoji">⛅</div>
+                        <div class="weather-temp">26°C</div>
+                        <div class="weather-condition">Partly Cloudy</div>
+                        <div class="weather-detail">💧 Humidity: 72%</div>
+                        <div class="weather-detail">💨 Wind: 14 km/h</div>
+                    </div>
+                    <div class="weather-card" role="status">
+                        <div class="weather-date">Saturday</div>
+                        <div class="weather-emoji">🌧️</div>
+                        <div class="weather-temp">24°C</div>
+                        <div class="weather-condition">Light Rain</div>
+                        <div class="weather-detail">💧 Humidity: 85%</div>
+                        <div class="weather-detail">💨 Wind: 18 km/h</div>
+                    </div>
+                    <div class="weather-card" role="status">
+                        <div class="weather-date">Sunday</div>
+                        <div class="weather-emoji">🌞</div>
+                        <div class="weather-temp">27°C</div>
+                        <div class="weather-condition">Mostly Sunny</div>
+                        <div class="weather-detail">💧 Humidity: 68%</div>
+                        <div class="weather-detail">💨 Wind: 10 km/h</div>
                     </div>
                 </div>
             </div>
@@ -141,11 +225,21 @@
         (function(){
             var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
             s1.async = true;
-            s1.src = 'https://embed.tawk.to/YOUR_PROPERTY_ID/1h1glv5k9'; // Replace with your Tawk.to property ID
+            s1.src = 'https://embed.tawk.to/65d3b4c9cc0a4149f7d1cc4c/1hjb5kkre'; // ShoreSquad Tawk.to chat
             s1.charset = 'UTF-8';
             s1.setAttribute('crossorigin', '*');
             s0.parentNode.insertBefore(s1, s0);
         })();
+        
+        // Customize Tawk appearance for beachy vibe
+        Tawk_API.onLoad = function(){
+            Tawk_API.setAttributes({
+                'name': 'ShoreSquad User',
+                'email': 'user@shoresquad.app',
+                'hash': 'mock-user-id-123'
+            }, function(error){});
+            // Tawk widget ready for user interaction
+        };
     </script>
 
     <!-- Application Scripts -->

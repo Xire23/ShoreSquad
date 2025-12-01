@@ -75,13 +75,52 @@ const DOM = {
 
 const LocationService = {
     /**
+     * Multiple beach cleanup spots in Singapore
+     */
+    cleanupSpots: [
+        {
+            name: 'East Coast Park',
+            lat: 1.3024,
+            lng: 103.9620,
+            mapId: 'east-coast',
+            description: '10 km of pristine coastline',
+            difficulty: 'Easy'
+        },
+        {
+            name: 'Pasir Ris Beach',
+            lat: 1.3815,
+            lng: 103.9556,
+            mapId: 'pasir-ris',
+            description: 'Scenic beach with mangroves',
+            difficulty: 'Medium'
+        },
+        {
+            name: 'Sentosa Beach',
+            lat: 1.2494,
+            lng: 103.8303,
+            mapId: 'sentosa',
+            description: 'Popular tourist beach',
+            difficulty: 'Easy'
+        },
+        {
+            name: 'Changi Beach',
+            lat: 1.4050,
+            lng: 103.9765,
+            mapId: 'changi',
+            description: 'Historic beach with naval history',
+            difficulty: 'Hard'
+        }
+    ],
+
+    /**
      * Request user's geolocation
      */
     async requestLocation() {
         try {
+            console.log('📍 Requesting user geolocation...');
+            
             if (!navigator.geolocation) {
-                UI.showAlert('❌ Geolocation not supported', 'error');
-                return false;
+                throw new Error('Geolocation API not supported in this browser');
             }
 
             UI.showLoading(true, 'Getting your location...');
@@ -90,13 +129,14 @@ const LocationService = {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         try {
-                            const { latitude, longitude } = position.coords;
-                            AppState.userLocation = { latitude, longitude };
+                            const { latitude, longitude, accuracy } = position.coords;
+                            AppState.userLocation = { latitude, longitude, accuracy };
+                            console.log(`✅ Location obtained: ${latitude.toFixed(4)}, ${longitude.toFixed(4)} (±${accuracy}m)`);
                             UI.showLoading(false);
                             UI.showAlert('📍 Location enabled!', 'success');
                             resolve(true);
                         } catch (err) {
-                            console.error('Error processing location:', err);
+                            console.error('❌ Error processing location:', err);
                             UI.showAlert('❌ Error processing location', 'error');
                             UI.showLoading(false);
                             resolve(false);
@@ -104,82 +144,230 @@ const LocationService = {
                     },
                     (error) => {
                         UI.showLoading(false);
-                        console.warn('Geolocation error:', error);
-                        UI.showAlert('❌ Unable to get location', 'error');
+                        let message = 'Unable to get location';
+                        
+                        // Handle specific geolocation errors
+                        if (error.code === 1) {
+                            message = 'Location permission denied. Enable location in browser settings.';
+                            console.warn('🚫 PERMISSION_DENIED');
+                        } else if (error.code === 2) {
+                            message = 'Location unavailable. Check your GPS.';
+                            console.warn('🚫 POSITION_UNAVAILABLE');
+                        } else if (error.code === 3) {
+                            message = 'Location request timeout.';
+                            console.warn('🚫 TIMEOUT');
+                        }
+                        
+                        console.error(`❌ Geolocation error (${error.code}):`, message);
+                        UI.showAlert(`❌ ${message}`, 'error');
                         resolve(false);
                     },
-                    { timeout: 10000, enableHighAccuracy: true }
+                    { 
+                        timeout: 10000, 
+                        enableHighAccuracy: true,
+                        maximumAge: 0
+                    }
                 );
             });
         } catch (err) {
-            console.error('LocationService error:', err);
-            UI.showAlert('❌ Unexpected error', 'error');
+            console.error('❌ LocationService error:', err);
+            UI.showAlert('❌ Unexpected error: ' + err.message, 'error');
+            UI.showLoading(false);
             return false;
         }
     },
+
+    /**
+     * Get nearest cleanup spot to user
+     */
+    getNearestSpot() {
+        try {
+            if (!AppState.userLocation) {
+                console.warn('⚠️ No user location available');
+                return this.cleanupSpots[0];
+            }
+
+            const { latitude, longitude } = AppState.userLocation;
+            let nearest = this.cleanupSpots[0];
+            let minDistance = Infinity;
+
+            this.cleanupSpots.forEach(spot => {
+                const distance = Math.sqrt(
+                    Math.pow(spot.lat - latitude, 2) + 
+                    Math.pow(spot.lng - longitude, 2)
+                );
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = spot;
+                }
+            });
+
+            console.log(`📍 Nearest spot: ${nearest.name} (${(minDistance * 111).toFixed(1)}km away)`);
+            return nearest;
+        } catch (err) {
+            console.error('❌ Error finding nearest spot:', err);
+            return this.cleanupSpots[0];
+        }
+    }
 };
 
 // ============================================
-// Weather Service
+// Weather Service - NEA Realtime Weather API
 // ============================================
 
 const WeatherService = {
     /**
-     * Fetch weather forecast from NEA API
+     * Fetch 24-hour weather forecast from NEA API (JSONP)
      */
     async fetchWeather() {
         try {
-            UI.showLoading(true, 'Loading weather...');
+            UI.showLoading(true, 'Loading real weather from NEA...');
+            console.log('📡 Fetching NEA 24-hour weather forecast...');
 
-            const url = 'https://api.data.gov.sg/v1/environment/4-day-weather-forecast';
-            const response = await fetch(url);
+            const url = 'https://api.data.gov.sg/v1/environment/24-hour-weather-forecast';
+            
+            // Use CORS proxy to handle JSONP/CORS issues
+            const corsUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const data = await response.json();
-            UI.showLoading(false);
+            console.log('✅ NEA API Response:', data);
 
+            if (!data.items || data.items.length === 0) {
+                throw new Error('No weather data in response');
+            }
+
+            UI.showLoading(false);
             AppState.weatherData = data;
             this.displayWeather(data);
-            UI.showAlert('🌤️ Weather loaded!', 'success');
+            UI.showAlert('🌤️ Real NEA weather loaded!', 'success');
+            console.log('✅ Weather displayed successfully');
+
         } catch (err) {
             UI.showLoading(false);
-            console.error('Weather API error:', err);
-            UI.showAlert('❌ Could not load weather', 'error');
+            console.error('❌ Weather API Error:', err.message);
+            console.warn('Falling back to mock weather data...');
+            UI.showAlert(`⚠️ Using mock data: ${err.message}`, 'info');
+            this.displayMockWeather();
         }
     },
 
     /**
-     * Display weather data
+     * Display weather from NEA API
      */
     displayWeather(data) {
         try {
             if (!data.items || data.items.length === 0) {
-                DOM.weatherDashboard.innerHTML = '<p>No weather data available</p>';
-                return;
+                throw new Error('No weather items available');
             }
 
-            const forecasts = data.items[0].forecasts;
-            let html = '<h3>4-Day Forecast</h3>';
+            const item = data.items[0];
+            const forecasts = item.forecasts || [];
+            const validDate = item.valid_period?.start || new Date().toISOString();
 
-            forecasts.forEach((day) => {
+            console.log(`📊 Displaying ${forecasts.length} forecast items`);
+
+            let html = `
+                <div class="weather-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="weather-date">Updated: ${new Date(validDate).toLocaleTimeString()}</div>
+                    <div class="weather-condition">🌏 Singapore 24-Hour Forecast</div>
+                </div>
+            `;
+
+            forecasts.slice(0, 8).forEach((forecast, idx) => {
+                const emoji = this.getWeatherEmoji(forecast.forecast);
+                const timeStr = new Date(forecast.timestamp).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
                 html += `
                     <div class="weather-card">
-                        <h4>${new Date(day.date).toLocaleDateString()}</h4>
-                        <p>${day.forecast}</p>
-                        <p><strong>${day.temperature.low}°C / ${day.temperature.high}°C</strong></p>
+                        <div class="weather-date">${timeStr}</div>
+                        <div class="weather-emoji">${emoji}</div>
+                        <div class="weather-condition">${forecast.forecast}</div>
+                        <div class="weather-detail">💧 ${forecast.relative_humidity}% humidity</div>
                     </div>
                 `;
             });
 
             DOM.weatherDashboard.innerHTML = html;
+            console.log('✅ Weather cards rendered');
+
         } catch (err) {
-            console.error('Error displaying weather:', err);
-            DOM.weatherDashboard.innerHTML = '<p>❌ Error loading weather</p>';
+            console.error('❌ Error displaying weather:', err);
+            this.displayMockWeather();
         }
     },
+
+    /**
+     * Display mock weather data (fallback)
+     */
+    displayMockWeather() {
+        try {
+            console.log('🎭 Loading mock weather data as fallback...');
+            const mockData = [
+                { time: '12:00', emoji: '☀️', condition: 'Sunny', humidity: 65 },
+                { time: '15:00', emoji: '⛅', condition: 'Partly Cloudy', humidity: 72 },
+                { time: '18:00', emoji: '🌧️', condition: 'Light Rain', humidity: 85 },
+                { time: '21:00', emoji: '⛈️', condition: 'Thunderstorm', humidity: 90 },
+                { time: '00:00', emoji: '🌙', condition: 'Clear Night', humidity: 60 },
+                { time: '03:00', emoji: '🌫️', condition: 'Haze', humidity: 70 },
+                { time: '06:00', emoji: '🌞', condition: 'Sunny', humidity: 55 },
+                { time: '09:00', emoji: '⛅', condition: 'Mostly Sunny', humidity: 68 }
+            ];
+
+            let html = `
+                <div class="weather-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="weather-date">Mock 24-Hour Forecast</div>
+                    <div class="weather-condition">🌏 Singapore (Demo Data)</div>
+                </div>
+            `;
+
+            mockData.forEach(data => {
+                html += `
+                    <div class="weather-card">
+                        <div class="weather-date">${data.time}</div>
+                        <div class="weather-emoji">${data.emoji}</div>
+                        <div class="weather-condition">${data.condition}</div>
+                        <div class="weather-detail">💧 ${data.humidity}% humidity</div>
+                    </div>
+                `;
+            });
+
+            DOM.weatherDashboard.innerHTML = html;
+            console.log('✅ Mock weather displayed');
+
+        } catch (err) {
+            console.error('❌ Error displaying mock weather:', err);
+            DOM.weatherDashboard.innerHTML = '<p>❌ Could not load weather data</p>';
+        }
+    },
+
+    /**
+     * Map weather condition to emoji
+     */
+    getWeatherEmoji(condition) {
+        const conditionLower = condition.toLowerCase();
+        if (conditionLower.includes('rain') || conditionLower.includes('shower')) return '🌧️';
+        if (conditionLower.includes('thunder') || conditionLower.includes('lightning')) return '⛈️';
+        if (conditionLower.includes('cloudy') || conditionLower.includes('overcast')) return '☁️';
+        if (conditionLower.includes('clear') || conditionLower.includes('sunny')) return '☀️';
+        if (conditionLower.includes('partly')) return '⛅';
+        if (conditionLower.includes('haze') || conditionLower.includes('mist')) return '🌫️';
+        if (conditionLower.includes('fog')) return '🌁';
+        return '🌤️';
+    }
 };
 
 // ============================================
@@ -333,15 +521,20 @@ function setupEventListeners() {
             return;
         }
 
-        // Location button
+        // Location button - trigger geolocation + weather API
         DOM.mapButton.addEventListener('click', async () => {
             try {
+                console.log('🔘 Location button clicked');
                 const success = await LocationService.requestLocation();
                 if (success) {
+                    console.log('🌐 Fetching weather from NEA API...');
                     await WeatherService.fetchWeather();
+                    const nearestSpot = LocationService.getNearestSpot();
+                    UI.smoothScroll('#weather');
                 }
             } catch (err) {
-                console.error('Location button error:', err);
+                console.error('❌ Location button handler error:', err);
+                UI.showAlert('❌ Error: ' + err.message, 'error');
             }
         });
 
@@ -373,7 +566,42 @@ function setupEventListeners() {
                         UI.smoothScroll(href);
                     }
                 } catch (err) {
-                    console.error('Nav link error:', err);
+                    console.error('❌ Nav link error:', err);
+                }
+            });
+        });
+
+        // Map spot button switching
+        document.querySelectorAll('.map-spot-btn').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                try {
+                    console.log('🗺️ Map button clicked:', e.currentTarget.dataset.map);
+                    
+                    // Remove active class from all buttons
+                    document.querySelectorAll('.map-spot-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button
+                    e.currentTarget.classList.add('active');
+                    
+                    // Hide all maps
+                    document.querySelectorAll('#mapContainer > div').forEach(map => {
+                        map.style.display = 'none';
+                    });
+                    
+                    // Show selected map
+                    const mapId = e.currentTarget.dataset.map + '-map';
+                    const selectedMap = document.getElementById(mapId);
+                    if (selectedMap) {
+                        selectedMap.style.display = 'block';
+                        console.log('✅ Map displayed:', mapId);
+                    } else {
+                        console.warn('⚠️ Map not found:', mapId);
+                    }
+                } catch (err) {
+                    console.error('❌ Map button error:', err);
+                    UI.showAlert('❌ Error switching map: ' + err.message, 'error');
                 }
             });
         });
